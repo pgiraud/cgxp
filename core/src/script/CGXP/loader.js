@@ -69,6 +69,9 @@
         "../../../../geoext.ux/ux/WMSBrowser/lib/GeoExt.ux/widgets/tree/WMSBrowserTreePanel.js",
         "../../../../geoext.ux/ux/WMSBrowser/resources/lang/fr.js",
         // </wmsbrowser dependencies>
+        // <addkmlfile dependecies>
+        "../../../../ext/Ext/examples/ux/fileuploadfield/FileUploadField.js",
+        // </addkmlfile dependecies>
         "locale/en.js",
         "locale/fr.js",
         "locale/de.js",
