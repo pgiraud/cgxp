@@ -72,6 +72,10 @@
         // <addkmlfile dependecies>
         "../../../../ext/Ext/examples/ux/fileuploadfield/FileUploadField.js",
         // </addkmlfile dependecies>
+        // <fulltextsearch dependencies>
+        "../../../../ext.ux/TwinTriggerComboBox/Ext/ux/form/TwinTriggerComboBox.js",
+        "data/FeatureReader.js",
+        // </fulltextsearch dependencies>
         "locale/en.js",
         "locale/fr.js",
         "locale/de.js",
