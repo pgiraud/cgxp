@@ -64,7 +64,7 @@ Ext.namespace("cgxp.plugins");
  *      This is to read the "identifier attribute" from the layer
  *      spec.
  *
- */   
+ */
 cgxp.plugins.FeaturesWindow = Ext.extend(gxp.plugins.Tool, {
 
     /** api: ptype = cgxp_featureswindow*/
@@ -231,7 +231,7 @@ cgxp.plugins.FeaturesWindow = Ext.extend(gxp.plugins.Tool, {
             }
             detail.push('</table>');
             feature.attributes[this.formatedAttributesId] = detail.join('');
-            feature.attributes.type = OpenLayers.i18n(feature.type); 
+            feature.attributes.type = OpenLayers.i18n(feature.type);
 
             if (feature.type != previousLayer) {
                 previousLayer = feature.type;
@@ -269,7 +269,7 @@ cgxp.plugins.FeaturesWindow = Ext.extend(gxp.plugins.Tool, {
             groupField: 'type',
             fields: [
                 'id',
-                'type', // the layer 
+                'type', // the layer
                 this.formatedAttributesId
             ]
         });
@@ -372,16 +372,16 @@ cgxp.plugins.FeaturesWindow = Ext.extend(gxp.plugins.Tool, {
             return groupedRecords;
         }
 
-        Ext.each(records, function(r) {        
+        Ext.each(records, function(r) {
             var attributes = r.getFeature().attributes;
-            
+
             var raw = {};
             var index = 0;
             // group records by type (layer)
             if (!groupedRecords[attributes.type]) {
                 var results = {
                     table: {
-                        data: [], 
+                        data: [],
                         columns: []
                     },
                     _newGroup: true
@@ -389,7 +389,7 @@ cgxp.plugins.FeaturesWindow = Ext.extend(gxp.plugins.Tool, {
                 groupedRecords[attributes.type] = results;
             }
             for (prop in attributes) {
-                if (attributes.hasOwnProperty(prop) && 
+                if (attributes.hasOwnProperty(prop) &&
                     prop != this.formatedAttributesId &&
                     prop != this.originalIdRef) {
 
