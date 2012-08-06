@@ -501,7 +501,7 @@ cgxp.plugins.ContextualData.Tooltip = OpenLayers.Class(cgxp.plugins.ContextualDa
     showLocationTooltip: function(ev) {
         if (this.showLocationInMapRequestOngoing) {
             return;
-        };
+        }
 
         this.lonLat = this.map.getLonLatFromPixel(ev.xy);
 
