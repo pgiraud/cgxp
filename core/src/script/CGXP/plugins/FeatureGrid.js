@@ -405,7 +405,7 @@ cgxp.plugins.FeatureGrid = Ext.extend(gxp.plugins.Tool, {
         // a ResultsPanel object has its own vector layer, which
         // is added to the map once for good
         this.vectorLayer = new OpenLayers.Layer.Vector(
-            OpenLayers.Util.createUniqueID("c2cgeoportal"), {
+            OpenLayers.Util.createUniqueID("cgxp"), {
                 displayInLayerSwitcher: false,
                 alwaysInRange: true
         });
