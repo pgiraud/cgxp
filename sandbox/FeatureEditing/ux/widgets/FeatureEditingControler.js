@@ -157,12 +157,15 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
     style: null,
 
     /** private: property[defaultStyle]
-     *  ``Object`` Feature style hash to apply to the default 
+     *  ``Object`` Feature style hash to apply to the default
      *   OpenLayers.Feature.Vector.style['default'] if no style was specified.
      */
     defaultStyle: {
         fillColor: "#ff0000",
-        strokeColor: "#ff0000"
+        strokeColor: "#ff0000",
+        fontColor: "#000000",
+        fontSize: "14px",
+        label: OpenLayers.i18n('no title')
     },
 
     /** api: config[layerOptions]
@@ -273,9 +276,98 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
 
         // if set, automatically creates a "cosmetic" layer
         if(this.cosmetic === true) {
-            var style = this.style || OpenLayers.Util.applyDefaults(
-                this.defaultStyle, OpenLayers.Feature.Vector.style["default"]);
-            var styleMap = new OpenLayers.StyleMap(style); 
+            var self = this;
+            var context = {
+                getLabel: function(feature) {
+                    var label;
+                    if (feature && feature.geometry &&
+                        feature.geometry.CLASS_NAME == 'OpenLayers.Geometry.Polygon') {
+                        label =  feature.geometry.getArea();
+                    }
+                    if (feature && feature.geometry &&
+                        feature.geometry.CLASS_NAME == 'OpenLayers.Geometry.LineString') {
+                        label = feature.geometry.getLength();
+                    }
+                    if (feature.isLabel && feature.attributes.style) {
+                        label = feature.attributes.style.label;
+                    }
+                    return label || "";
+                },
+                getFillColor: function(feature) {
+                    if (!feature.attributes.style) {
+                        return self.defaultStyle.fillColor;
+                    }
+                    return feature.attributes.style.fillColor;
+                },
+                getStrokeWidth: function(feature) {
+                    if (!feature.attributes.style) {
+                        return self.defaultStyle.strokeWidth ||
+                            OpenLayers.Feature.Vector.style["default"].strokeWidth;
+                    }
+                    return feature.attributes.style.strokeWidth;
+                },
+                getPointRadius: function(feature) {
+                    if (!feature.attributes.style) {
+                        return self.defaultStyle.pointRadius ||
+                            OpenLayers.Feature.Vector.style["default"].pointRadius;
+                    }
+                    return feature.attributes.style.pointRadius;
+                },
+                getGraphic: function(feature) {
+                    return "";
+                    //return !feature.isLabel;
+                },
+                getFontColor: function(feature) {
+                    if (!feature.attributes.style) {
+                        return self.defaultStyle.fontColor;
+                    }
+                    return feature.attributes.style.fontColor;
+                },
+                getFontSize: function(feature) {
+                    if (!feature.attributes.style) {
+                        return self.defaultStyle.fontSize;
+                    }
+                    return feature.attributes.style.fontSize;
+                }
+            };
+
+            var template = {
+                label: "${getLabel}",
+                fillColor: "${getFillColor}",
+                strokeColor: "${getFillColor}",
+                strokeWidth: "${getStrokeWidth}",
+                pointRadius: "${getPointRadius}",
+                fontColor: "${getFontColor}",
+                fontSize: "${getFontSize}"
+            };
+            template = this.style || OpenLayers.Util.applyDefaults(
+                template, OpenLayers.Feature.Vector.style["default"]);
+            var labelTemplate = OpenLayers.Util.applyDefaults({
+                graphic: false,
+                labelSelect: true
+            }, template);
+            var labelRule = new OpenLayers.Rule({
+                filter: new OpenLayers.Filter.Comparison({
+                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                    property: "isLabel",
+                    value: true
+                }),
+                symbolizer: labelTemplate
+            });
+            var defaultRule = new OpenLayers.Rule({
+                elseFilter: true,
+                symbolizer: template
+            });
+
+            style = new OpenLayers.Style(null, {context: context});
+            style.addRules([
+                labelRule,
+                defaultRule
+            ]);
+            var styleMap = new OpenLayers.StyleMap({
+                "default": style,
+                "select": style
+            });
             var layerOptions = OpenLayers.Util.applyDefaults(
                 this.layerOptions, {
                   styleMap: styleMap,
@@ -717,6 +809,8 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
     onLabelAdded: function(event) {
         var feature = event.feature;
         feature.isLabel = true;
+        feature.attributes.isLabel = true;
+        feature.attributes.style.label = OpenLayers.i18n('no title');
     },
 
     /** private: method[onCircleAdded]
@@ -803,7 +897,7 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
             options['plugins'] = [new GeoExt.ux.ExportFeature(), new GeoExt.ux.CloseFeatureDialog()];
         }
 
-        clazz = this.featurePanelClass || GeoExt.ux.form.FeaturePanel; 
+        clazz = this.featurePanelClass || GeoExt.ux.form.FeaturePanel;
         this.featurePanel = new clazz(options);
 
         // display the popup
@@ -873,39 +967,14 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
     onBeforeFeatureAdded: function(event) {
         var feature = event.feature;
         this.parseFeatureStyle(feature);
-        this.parseFeatureDefaultAttributes(feature);
+        //this.parseFeatureDefaultAttributes(feature);
     },
 
     /** private: method[parseFeatureStyle]
      */
     parseFeatureStyle: function(feature) {
         var symbolizer = this.activeLayer.styleMap.createSymbolizer(feature);
-        feature.style = symbolizer;
-    },
-
-    /** private: method[parseFeatureDefaultAttributes]
-     *  :param event: ``OpenLayers.Feature.Vector``
-     *  Check if the feature has any attributes.  If not, add those defined in
-     *  this.defaultAttributes.
-     */
-    parseFeatureDefaultAttributes: function(feature) {
-        var hasAttributes;
-
-        if(this.useDefaultAttributes === true) {
-            hasAttributes = false;
-
-            for (var key in feature.attributes) {
-                hasAttributes = true;
-                break;
-            }
-
-            if(!hasAttributes) {
-                for(var i=0; i<this.defaultAttributes.length; i++) {
-                    feature.attributes[this.defaultAttributes[i]] =
-                        this.defaultAttributesValues[i];
-                }
-            }
-        }
+        feature.attributes.style = symbolizer;
     },
 
     /** private: method[reactivateDrawControl]
@@ -965,7 +1034,7 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
     /** private: method[applyStyles]
      *  :param style: ``String`` Mandatory.  Can be "normal" or "faded".
      *  :param options: ``Object`` Object of options.
-     *  Apply a specific style to all layers of this controler.  If 
+     *  Apply a specific style to all layers of this controler.  If
      *  'redraw': true was specified in the options, the layer is redrawn after.
      */
     applyStyles: function(style, options) {
@@ -975,7 +1044,7 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
             layer = this.layers[i];
             for(var j=0; j<layer.features.length; j++) {
                 feature = layer.features[j];
-                // don't apply any style to features coming from the 
+                // don't apply any style to features coming from the
                 // ModifyFeature control
                 if(!feature._sketch) {
                     this.applyStyle(feature, style);
@@ -992,7 +1061,7 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
      *  :param feature: ``OpenLayers.Feature.Vector``
      *  :param style: ``String`` Mandatory.  Can be "normal" or "faded".
      *  :param options: ``Object`` Object of options.
-     *  Apply a specific style to a specific feature.  If 'redraw': true was 
+     *  Apply a specific style to a specific feature.  If 'redraw': true was
      *  specified in the options, the layer is redrawn after.
      */
     applyStyle: function(feature, style, options) {
@@ -1005,12 +1074,12 @@ GeoExt.ux.FeatureEditingControler = Ext.extend(Ext.util.Observable, {
             break;
           default:
             fRatio = 1 / this.fadeRatio;
-        }   
+        }
 
         for(var i=0; i<this.opacityProperties.length; i++) {
             property = this.opacityProperties[i];
-            if(feature.style[property]) {
-                feature.style[property] *= fRatio;
+            if(feature.attributes.style[property]) {
+                feature.attributes.style[property] *= fRatio;
             }
         }
 

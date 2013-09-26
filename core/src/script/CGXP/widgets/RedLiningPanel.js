@@ -145,7 +145,7 @@ cgxp.RedLiningPanel = Ext.extend(
                     feature.isLabel = true;
                 }
                 this.controler.activeLayer.addFeatures([feature]);
-                Ext.apply(feature.style, style);
+                //Ext.apply(feature.style, style);
                 this.controler.activeLayer.drawFeature(feature);
             }, this);
         }

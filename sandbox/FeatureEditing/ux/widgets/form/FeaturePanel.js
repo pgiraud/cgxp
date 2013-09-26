@@ -314,12 +314,13 @@ GeoExt.ux.form.FeaturePanel = Ext.extend(Ext.form.FormPanel, {
 
         this.parseFormFieldsToFeatureAttributes(feature);
         if (feature.isLabel === true) {
-            if (feature.attributes[this.labelAttribute] != "") {
-                feature.style.label = feature.attributes[this.labelAttribute];
-                feature.style.graphic = false;
-                feature.style.labelSelect = true;
+            if (feature.attributes.style.label != "") {
+                feature.attributes.style.label
+                //feature.style.label = feature.attributes[this.labelAttribute];
+                //feature.style.graphic = false;
+                //feature.style.labelSelect = true;
 
-                feature.layer.drawFeature(feature);
+                //feature.layer.drawFeature(feature);
             } else {
                 //this.controler.getSelectControl().unselect();
                 feature.layer.destroyFeatures([feature]);

@@ -248,15 +248,13 @@ GeoExt.ux.form.FeaturePanel.prototype.initMyItems = function() {
                 xtype: 'spinnerfield',
                 name: 'pointRadius',
                 fieldLabel: this.pointRadiusFieldText,
-                value: feature.style.pointRadius || 10,
+                value: feature.attributes.style.pointRadius || 10,
                 width: 40,
                 minValue: 6,
                 maxValue: 20,
                 listeners: {
                     spin: function(spinner) {
-                        feature.style = OpenLayers.Util.extend(feature.style,  {
-                            pointRadius: spinner.field.getValue()
-                        });
+                        feature.attributes.style.pointRadius = spinner.field.getValue();
                         feature.layer.drawFeature(feature);
                     },
                     scope: this
@@ -270,23 +268,30 @@ GeoExt.ux.form.FeaturePanel.prototype.initMyItems = function() {
             name: 'name',
             fieldLabel: this.labelFieldText,
             id: 'name',
-            value: feature.attributes['name']
+            value: feature.attributes.style['label'],
+            enableKeyEvents: true,
+            listeners: {
+                keyup: function(field) {
+                    feature.attributes.style['label'] = field.getValue();
+                    feature.layer.drawFeature(feature);
+                }
+            }
         });
     }
 
     // color or font color
     var colorpicker = new Ext.ux.ColorField({
-        value: feature.style[(feature.isLabel ? 'fontColor' : 'fillColor')] ||
+        value: feature.attributes.style[(feature.isLabel ? 'fontColor' : 'fillColor')] ||
             '#ff0000',
         fieldLabel: this.colorFieldText,
         width: 100
     });
     colorpicker.on('select', function(cm, color) {
         if (feature.isLabel) {
-            feature.style.fontColor = color;
+            feature.attributes.style.fontColor = color;
         } else {
-            feature.style.fillColor = color;
-            feature.style.strokeColor = color;
+            feature.attributes.style.fillColor = color;
+            feature.attributes.style.strokeColor = color;
         }
         feature.layer.drawFeature(feature);
     }, this);
@@ -301,7 +306,7 @@ GeoExt.ux.form.FeaturePanel.prototype.initMyItems = function() {
             xtype: 'spinnerfield',
             name: 'stroke',
             fieldLabel: this[attribute + 'FieldText'],
-            value: feature.style[attribute] || ((feature.isLabel) ? 12 : 1),
+            value: feature.attributes.style[attribute] || ((feature.isLabel) ? 12 : 1),
             width: 40,
             minValue: feature.isLabel ? 10 : 1,
             maxValue: feature.isLabel ? 20 : 10,
@@ -311,7 +316,7 @@ GeoExt.ux.form.FeaturePanel.prototype.initMyItems = function() {
                     var style = {};
                     style[attribute] = spinner.field.getValue() +
                         (f.isLabel ? 'px' : '');
-                    f.style = OpenLayers.Util.extend(f.style, style);
+                    f.attributes.style = OpenLayers.Util.extend(f.attributes.style, style);
                     f.layer.drawFeature(f);
                 },
                 scope: this
